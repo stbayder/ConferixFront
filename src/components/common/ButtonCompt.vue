@@ -1,85 +1,111 @@
 <template>
-    <button @click="clickFunc"
-        :class="[buttonStyle,animation]"
+    <button @click="handleClick"
+        :class="[...buttonStyle, animation]"
         @mouseenter="mouseIn"
         @mouseleave="mouseOut"
     >
-        {{ buttonText }}
+        <slot>{{ buttonText }}</slot>
     </button>
 </template>
 
 <script>
-
-
 export default {
-    name:"ButtonCompt",
-    data(){
-        return{
-            animation:null,
+    name: "ButtonCompt",
+    data() {
+        return {
+            animation: null,
         }
     },
-    props:{
-        clickFunc:{
-            type:Function,
-            required:true
+    props: {
+        clickFunc: {
+            type: Function,
+            required: true
         },
-        buttonText:{
-            type:String,
-            required:true
+        buttonText: {
+            type: String,
+            required: true
         },
-        buttonStyle:{
-            type:Array,
-            required:true,
+        buttonStyle: {
+            type: Array,
+            required: true,
         }
     },
-    methods:{
-        mouseIn(){
-            this.animation = "animate__animated animate__shakeY"
+    methods: {
+        mouseIn() {
+            if (this.buttonText === "הירשם" || this.buttonText === "שמור כנס") {
+                this.animation = "animate__animated animate__shakeY";
+            }
         },
-        mouseOut(){
-            this.animation = null
+        mouseOut() {
+            this.animation = null;
+        },
+        handleClick() {
+            if (typeof this.clickFunc === 'function') {
+                this.clickFunc();
+            } else {
+                console.warn('clickFunc is not a function');
+            }
         }
     }
 }
 </script>
 
 <style scoped>
-
-button{
+button {
     border: none;
     font-family: "Noto Sans Hebrew";
-    border-radius:10px;
+    border-radius: 10px;
     color: #F2F0EF;
     cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
-.big{
+.big {
     width: 10vw;
     height: 8vh;
-    font-size:2em;
+    font-size: 2em;
 }
 
-.medium{
-    width:8vw;
-    height:6vh;
+.medium {
+    width: 8vw;
+    height: 6vh;
     font-size: 1.7em;
 }
 
-.error{
+.entireWidth {
+    width: 100%;
+    height: 6vh;
+    font-size: 1.2em;
+}
+
+.halfWidth {
+    width: 48%;
+    height: 6vh;
+    font-size: 1.2em;
+}
+
+.error {
     background-color: red;
 }
 
-.warning{
+.warning {
     background-color: yellow;
 }
 
-.signup{
+.signup {
     background-color: #2977ff;
 }
-.default{
-    color:#2977ff;
+
+.secondary {
     background-color: #F2F0EF;
+    color: #2977ff;
+    border: 1px solid #2977ff;
 }
 
-
+.default {
+    color: #2977ff;
+    background-color: #F2F0EF;
+}
 </style>

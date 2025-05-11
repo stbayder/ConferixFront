@@ -1,5 +1,6 @@
 <template>
   <div class="navbar">
+    <img src="../../assets/images/logo.png" alt="">
     <router-link :to="{name:'home'}">בית</router-link> 
     <router-link :to="{name:'about'}">קצת עלינו</router-link>
     <a href="#" @click="LogOut" v-if="userData">התנתק</a>
@@ -9,7 +10,7 @@
     </template>
   </div>
 </template>
-
+ 
 <script>
 import eventBus from '@/utils/eventBus';
 
@@ -52,6 +53,11 @@ export default{
 </script>
 
 <style scoped>
+img{
+  position: absolute;
+  right: 5vw;
+  width:8vw;
+}
 .navbar{
     width: 100%;
 

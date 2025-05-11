@@ -3,6 +3,7 @@ import HomeView from "../views/HomeView.vue";
 import AboutView from "../views/AboutView.vue"
 import SignUpPage from "../views/SignUpPage.vue"
 import LoginView from "../views/LoginView.vue";
+import CreateProjectForm from "@/views/CreateProjectForm.vue";
 
 
 const routes = [
@@ -25,6 +26,11 @@ const routes = [
     path: "/login",
     name: "login",
     component: LoginView,
+  },
+  {
+    path: "/projects/create",
+    name: "create-project",
+    component: CreateProjectForm,
   }
 ];
 
