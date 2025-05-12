@@ -32,13 +32,13 @@
                     <div class="ProjectTypeInput form-step" v-else-if="formLevel === 2" key="type">
                         <label>בחר את סוג הכנס (ניתן לבחור יותר מאחד)</label>
                         <div class="checkbox-container">
-                            <div class="checkbox-item" v-for="(type, index) in projectTypeOptions" :key="index">
+                            <div class="checkbox-item" v-for="(option, index) in projectTypeOptions" :key="index">
                                 <input 
                                     type="checkbox" 
                                     :id="'type-' + index"
-                                    :value="type"
+                                    :value="option.value"
                                     v-model="projectType">
-                                <label :for="'type-' + index">{{ type }}</label>
+                                <label :for="'type-' + index">{{ option.label }}</label>
                             </div>
                         </div>
                     </div>
@@ -63,7 +63,7 @@
                             <strong>תאריך:</strong> {{ formattedDate }}
                         </div>
                         <div class="summary-item">
-                            <strong>סוג:</strong> {{ projectType.join(', ') }}
+                            <strong>סוג:</strong> {{ displayProjectTypes }}
                         </div>
                         <div class="summary-item" v-if="projectBudget">
                             <strong>תקציב:</strong> {{ projectBudget }} ₪
@@ -108,13 +108,13 @@ export default {
             projectBudget: null,
             transitionName: 'slide-right',
             projectTypeOptions: [
-                'כנס מקצועי',
-                'כנס בינלאומי',
-                'כנס תעשייה',
-                'כנס אקדמי',
-                'כנס חברה',
-                'אחר'
+                { label: 'כנס פרונטלי', value: 'פרונטלי' },
+                { label: 'כנס בינלאומי', value: 'בינלאומי' },
+                { label: 'כנס לוקלי', value: 'לוקלי' },
+                { label: 'כנס היברידי', value: 'היברידי' },
+                { label: 'כנס וירטואלי', value: 'וירטואלי' },
             ],
+            typeLabelsMap: {},
             steps: [
                 {
                     title: "יצירת כנס חדש",
@@ -140,6 +140,13 @@ export default {
         }
     },
     
+    created() {
+        // Create a mapping of value to label for display purposes
+        this.projectTypeOptions.forEach(option => {
+            this.typeLabelsMap[option.value] = option.label;
+        });
+    },
+    
     computed: {
         currentStep() {
             return this.steps[this.formLevel];
@@ -155,6 +162,10 @@ export default {
             if (this.formLevel === 1 && !this.projectDate) return false;
             if (this.formLevel === 2 && this.projectType.length === 0) return false;
             return true;
+        },
+        // For display in the summary, show the full labels
+        displayProjectTypes() {
+            return this.projectType.map(value => this.typeLabelsMap[value] || value).join(', ');
         }
     },
 
@@ -190,11 +201,11 @@ export default {
                 }
 
                 await axios.post(
-                    'http://localhost:3000/api/projects',
+                    `${process.env.VUE_APP_BACKEND_URL}/api/projects`,
                     {
                         name: this.projectName,
                         date: this.projectDate,
-                        type: this.projectType,
+                        type: this.projectType, 
                         budget: this.projectBudget || 0
                     },
                     {
