@@ -216,7 +216,7 @@ export default {
                 );
 
                 // Redirect to project page or dashboard
-                this.$router.push('/dashboard');
+                this.$router.push('/projects/dashboard');
                 
             } catch (error) {
                 console.error('Error creating project:', error);

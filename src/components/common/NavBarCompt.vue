@@ -3,7 +3,10 @@
     <img src="../../assets/images/logo.png" alt="">
     <router-link :to="{name:'home'}">בית</router-link> 
     <router-link :to="{name:'about'}">קצת עלינו</router-link>
-    <a href="#" @click="LogOut" v-if="userData">התנתק</a>
+    <template v-if="userData">
+      <a href="#" @click="LogOut" >התנתק</a>
+      <router-link :to="{name:'create-project'}">צור פרוייקט</router-link>
+    </template>
     <template v-else>
       <router-link :to="{name:'sign-up'}">הירשם</router-link>
       <router-link :to="{name:'login'}">התחבר</router-link>
