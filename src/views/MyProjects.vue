@@ -1,6 +1,6 @@
 <template>
     <div v-if="showDashboard" class="containerOfAll">
-        <div  class="container" v-if="projectChosen == null">
+        <div  class="container" >
             <h1 class="title">כנסים בטיפולך</h1>
             <!-- add loading modal -->
             <div v-if="loading">טוען פרוייקטים..</div>
@@ -8,18 +8,74 @@
                 <div v-if="projectList.length === 0">לא קיימים פרוייקטים</div>
                 <!-- להראות כפתור להפנייה ליצירת פרוייקט -->
 
-                <div v-else class="projectsContainer">
-                    <div v-for="project in projectList" :key="project._id" class="project-item">
+                <div v-if="projectList.length > 0 && !projectChosen" class="projectsContainer">
+                    <div v-for="project in projectList" :key="project._id" class="project-item" @click="projectWasChosen(project._id)" >
                         <h3>{{ truncateName(project.name || 'Untitled Project',15) }}</h3>
                         <p>התפקיד שלך : {{ editorOrCreator(project) }}</p>
                         <p>תאריך : {{formatDate(project.date)}}</p>
                     </div>
                 </div>
-
+                
+                <div v-else id="displayProject"> 
+                    <h2>
+                        {{ projectChosen.name }}
+                    </h2>
+                    <!-- categories -->
+                    <div class="categories-wrapper">
+                        <div 
+                            v-for="(cat, index) in assgimentCategories" 
+                            :key="index" 
+                            class="category-icon"
+                            @click="chooseCategory(cat.label)"
+                        >
+                            <img :src="cat.icon" :alt="cat.label" />
+                            <span class="tooltip">{{ cat.label }}</span>
+                        </div>
+                    </div>
+                    <!-- Assigments -->
+                    <div v-if="chosenAssigmentCategory" class="assignmentContainer">
+                        <div 
+                            v-for="(ass, index) in paginatedAssignments" 
+                            :key="index"
+                            class="Assignment"
+                        >
+                            <div class="assignment-left">
+                                <img 
+                                    :src="getCategoryIcon(ass.Assignment.Step)" 
+                                    alt="category icon" 
+                                    class="assignment-icon"
+                                />
+                                <p>{{ ass.Assignment.Assignment }}</p>
+                            </div>
+                            <div class="assignment-right">
+                                <img 
+                                    :src="ass.Important ? require('@/assets/icons/starred.png') : require('@/assets/icons/not_starred.png')" 
+                                    alt="important star" 
+                                    class="star-icon"
+                                />
+                                <p>{{ getAssignmentStatus(ass.Status) }}</p>
+                            </div>
+                            
+                        </div>
+                        <div v-if="filteredAssigments && filteredAssigments.length > itemsPerPage" class="pagination-controls">
+                            <button @click="currentPage--" :disabled="currentPage === 1">הקודם</button>
+                            <span>עמוד {{ currentPage }} מתוך {{ totalPages }}</span>
+                            <button @click="currentPage++" :disabled="currentPage === totalPages">הבא</button>
+                        </div>
+                    
+                    </div>
+                </div>
             </div>
         </div>
         
-        <DashboardSidebar :projects="projectList" />
+        <DashboardSidebar 
+            :projects="projectList"
+            :chosenProject="projectChosen"
+            :assCategories="assgimentCategories"
+            @projectWasChosen="projectWasChosen"
+            @nullProject="projectChosen=null"
+            @categoryChosen="chooseCategory"
+        />
         
     </div>
 
@@ -57,11 +113,38 @@ export default {
             showDashboard: true,
             projectList: [],
             projectChosen:null,
+            assgimentCategories: [
+                { label: "הגדרה ראשונית", icon: require("@/assets/icons/settings.png") },
+                { label: "תכנון תוכן", icon: require("@/assets/icons/content.png") },
+                { label: "לוגיסטיקה", icon: require("@/assets/icons/logistics.png") },
+                { label: "ביום הכנס", icon: require("@/assets/icons/dayof.png") },
+                { label: "שיווק ופרסום", icon: require("@/assets/icons/marketing.png") },
+                { label: "לאחר הכנס", icon: require("@/assets/icons/congrats.png") },
+                { label: "חשוב", icon: require("@/assets/icons/starred.png") },
+                { label: "הושלם", icon: require("@/assets/icons/done.png") },
+                { label: "בתהליך", icon: require("@/assets/icons/in_progress.png") },
+                { label: "עוד לא התחילה", icon: require("@/assets/icons/sleep.png") }
+            ],
+            chosenAssigmentCategory:null,
+            filteredAssigments:null,
+            currentPage: 1,
+            itemsPerPage: 5,
             loading: true,
             modalTitle: null,
             modalMessage:null,
             modalType:null,
             showModal:null
+        }
+    },
+    computed: {
+        paginatedAssignments() {
+            if (!this.filteredAssigments) return [];
+            const start = (this.currentPage - 1) * this.itemsPerPage;
+            return this.filteredAssigments.slice(start, start + this.itemsPerPage);
+        },
+        totalPages() {
+            if (!this.filteredAssigments) return 1;
+            return Math.ceil(this.filteredAssigments.length / this.itemsPerPage);
         }
     },
     methods: {
@@ -118,9 +201,54 @@ export default {
                 return("עורך")
             }
         },
+        projectWasChosen(project_id){
+            this.projectChosen = this.projectList.find(project => project._id == project_id)
+            this.chosenAssigmentCategory=null;
+            this.filteredAssigments=null;
+        },
+        chooseCategory(cat){
+            this.chosenAssigmentCategory = cat;
+            this.currentPage = 1;
+            if(cat == "חשוב"){
+                this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Important)
+                console.log(this.filteredAssigments)
+                return
+            }
+            if(cat == "הושלם"){
+                this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Status == "Done")
+                console.log(this.filteredAssigments)
+                return
+            }
+            if(cat == "בתהליך"){
+                this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Status == "InProgress")
+                console.log(this.filteredAssigments)
+                return
+            }
+            if(cat == "עוד לא התחילה"){
+                this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Status == "Pending")
+                console.log(this.filteredAssigments)
+                return
+            }
+            this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Assignment.Step === cat)
+            console.log(this.filteredAssigments)
+        },
+        getCategoryIcon(step) {
+            const match = this.assgimentCategories.find(cat => cat.label === step);
+            return match ? match.icon : null;
+        },
+        getAssignmentStatus(assStatus){
+            if(assStatus == "Pending"){
+                return "עוד לא התחילה"
+            }
+            if(assStatus == "InProgress"){
+                return "בתהליך"
+            }
+            if(assStatus == "Done"){
+                return "הושלם"
+            }
+        },
         formatDate,
         truncateName,
-        
         // handleLogout() {
         //     localStorage.removeItem('userData');
         //     this.userData = null;
@@ -177,19 +305,147 @@ h1{
 }
 
 .project-item {
+    width: 10vw; /* fixed width */
+    min-width: 10vw;
+    max-width: 10vw;
+    overflow: hidden; /* hide overflow */
+    text-overflow: ellipsis; /* add ellipsis to overflow text */
+    white-space: nowrap; /* prevent wrapping */
+    
     border: 1px solid #2977ff;
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 4px;
-    background-color: #F2F0EF;;
+    background-color: #F2F0EF;
     color: #2977ff;
-    max-width: 10vw;
+    cursor: pointer;
 }
 
 .projectsContainer{
     width: 50vw;
     display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
     gap: 2vw;
-    background-color: ;
 }
+
+
+#displayProject{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.categories-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+  justify-content: center;
+  align-items: center;
+}
+
+.category-icon {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  background-color: #2977ff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: transform 0.3s;
+  cursor: pointer;
+}
+
+.category-icon:hover {
+  transform: scale(1.1);
+}
+
+.category-icon img {
+  width: 30px;
+  height: 30px;
+}
+
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  background-color: #333;
+  color: #fff;
+  padding: 4px 8px;
+  border-radius: 4px;
+  position: absolute;
+  bottom: -30px;
+  right: 50%;
+  transform: translateX(50%);
+  transition: opacity 0.3s;
+  font-size: 0.8em;
+  z-index: 10;
+}
+
+.category-icon:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+.assignmentContainer{
+    display: flex;
+    flex-direction: column;
+    gap: 2vh;
+}
+
+.Assignment{
+    width:25vw;
+    height:5vh;
+    padding: 1vh;
+
+    display: flex;
+    justify-content: space-between;
+
+    background-color: #2977ff;
+    color: #F2F0EF;
+    border-radius: 20px;
+}
+
+.Assignment > p{
+    margin: 0;
+}
+
+.assignment-left, .assignment-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 10vw;
+}
+
+.assignment-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.star-icon {
+    width: 18px;
+    height: 18px;
+}
+.pagination-controls {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.pagination-controls button {
+    background-color: #2977ff;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.pagination-controls button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
 </style>

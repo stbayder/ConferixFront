@@ -28,23 +28,39 @@
                             v-model="projectDate">
                     </div>
 
-                    <!-- Project Type Input -->
-                    <div class="ProjectTypeInput form-step" v-else-if="formLevel === 2" key="type">
-                        <label>בחר את סוג הכנס (ניתן לבחור יותר מאחד)</label>
-                        <div class="checkbox-container">
-                            <div class="checkbox-item" v-for="(option, index) in projectTypeOptions" :key="index">
+                    <!-- Project Format Type Input (First category) -->
+                    <div class="ProjectFormatInput form-step" v-else-if="formLevel === 2" key="format">
+                        <div class="radio-container">
+                            <div class="radio-item" v-for="(option, index) in formatOptions" :key="index">
                                 <input 
-                                    type="checkbox" 
-                                    :id="'type-' + index"
+                                    type="radio" 
+                                    :id="'format-' + index"
                                     :value="option.value"
-                                    v-model="projectType">
-                                <label :for="'type-' + index">{{ option.label }}</label>
+                                    v-model="selectedFormat"
+                                    name="formatGroup">
+                                <label :for="'format-' + index">{{ option.label }}</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Project Scope Type Input (Second category) -->
+                    <div class="ProjectScopeInput form-step" v-else-if="formLevel === 3" key="scope">
+                        <label>בחר את היקף הכנס</label>
+                        <div class="radio-container">
+                            <div class="radio-item" v-for="(option, index) in scopeOptions" :key="index">
+                                <input 
+                                    type="radio" 
+                                    :id="'scope-' + index"
+                                    :value="option.value"
+                                    v-model="selectedScope"
+                                    name="scopeGroup">
+                                <label :for="'scope-' + index">{{ option.label }}</label>
                             </div>
                         </div>
                     </div>
 
                     <!-- Project Budget Input -->
-                    <div class="ProjectBudgetInput form-step" v-else-if="formLevel === 3" key="budget">
+                    <div class="ProjectBudgetInput form-step" v-else-if="formLevel === 4" key="budget">
                         <label for="projectBudget">תקציב לכנס (לא חובה)</label>
                         <input 
                             type="number" 
@@ -54,7 +70,7 @@
                     </div>
 
                     <!-- Summary Step -->
-                    <div class="ProjectSummary form-step" v-else-if="formLevel === 4" key="summary">
+                    <div class="ProjectSummary form-step" v-else-if="formLevel === 5" key="summary">
                         <h3>סיכום פרטי הכנס</h3>
                         <div class="summary-item">
                             <strong>שם הכנס:</strong> {{ projectName }}
@@ -62,8 +78,11 @@
                         <div class="summary-item">
                             <strong>תאריך:</strong> {{ formattedDate }}
                         </div>
-                        <div class="summary-item">
-                            <strong>סוג:</strong> {{ displayProjectTypes }}
+                        <div class="summary-item" v-if="selectedFormat">
+                            <strong>פורמט:</strong> {{ getFormatLabel(selectedFormat) }}
+                        </div>
+                        <div class="summary-item" v-if="selectedScope">
+                            <strong>היקף:</strong> {{ getScopeLabel(selectedScope) }}
                         </div>
                         <div class="summary-item" v-if="projectBudget">
                             <strong>תקציב:</strong> {{ projectBudget }} ₪
@@ -86,7 +105,7 @@
                     
                     <ButtonCompt 
                         :clickFunc="goNext"
-                        :buttonText="formLevel < 4 ? 'הבא' : 'שמור כנס'" 
+                        :buttonText="formLevel < 5 ? 'הבא' : 'שמור כנס'" 
                         :buttonStyle="[formLevel > 0 ? 'halfWidth' : 'entireWidth', 'signup']" />
                 </div>
             </div>
@@ -104,17 +123,21 @@ export default {
             formLevel: 0,
             projectName: null,
             projectDate: null,
-            projectType: [],
+            selectedFormat: null,  // For first category (format)
+            selectedScope: null,   // For second category (scope)
             projectBudget: null,
             transitionName: 'slide-right',
-            projectTypeOptions: [
-                { label: 'כנס פרונטלי', value: 'פרונטלי' },
-                { label: 'כנס בינלאומי', value: 'בינלאומי' },
-                { label: 'כנס לוקלי', value: 'לוקלי' },
-                { label: 'כנס היברידי', value: 'היברידי' },
+            formatOptions: [
                 { label: 'כנס וירטואלי', value: 'וירטואלי' },
+                { label: 'כנס היברידי', value: 'היברידי' },
+                { label: 'כנס פרונטלי', value: 'פרונטלי' }
             ],
-            typeLabelsMap: {},
+            scopeOptions: [
+                { label: 'כנס בינלאומי', value: 'בינ"ל' },
+                { label: 'כנס לוקלי', value: 'לוקלי' }
+            ],
+            formatLabelsMap: {},
+            scopeLabelsMap: {},
             steps: [
                 {
                     title: "יצירת כנס חדש",
@@ -125,8 +148,12 @@ export default {
                     text: "בחר את התאריך המתוכנן לכנס"
                 },
                 {
-                    title: "איזה סוג כנס?",
-                    text: "בחר את הקטגוריות המתאימות לכנס שלך"
+                    title: "איזה פורמט כנס?",
+                    text: "בחר את פורמט הכנס המתאים"
+                },
+                {
+                    title: "מה היקף הכנס?",
+                    text: "בחר האם זה כנס לוקלי או בינלאומי"
                 },
                 {
                     title: "מה התקציב?",
@@ -141,9 +168,12 @@ export default {
     },
     
     created() {
-        // Create a mapping of value to label for display purposes
-        this.projectTypeOptions.forEach(option => {
-            this.typeLabelsMap[option.value] = option.label;
+        // Create mappings of value to label for display purposes
+        this.formatOptions.forEach(option => {
+            this.formatLabelsMap[option.value] = option.label;
+        });
+        this.scopeOptions.forEach(option => {
+            this.scopeLabelsMap[option.value] = option.label;
         });
     },
     
@@ -160,16 +190,28 @@ export default {
             // Check if required fields are filled
             if (this.formLevel === 0 && !this.projectName) return false;
             if (this.formLevel === 1 && !this.projectDate) return false;
-            if (this.formLevel === 2 && this.projectType.length === 0) return false;
+            if (this.formLevel === 2 && !this.selectedFormat) return false;
+            if (this.formLevel === 3 && !this.selectedScope) return false;
             return true;
         },
-        // For display in the summary, show the full labels
-        displayProjectTypes() {
-            return this.projectType.map(value => this.typeLabelsMap[value] || value).join(', ');
+        // Combine selected types for form submission
+        projectType() {
+            const types = [];
+            if (this.selectedFormat) types.push(this.selectedFormat);
+            if (this.selectedScope) types.push(this.selectedScope);
+            return types;
         }
     },
 
     methods: {
+        getFormatLabel(value) {
+            return this.formatLabelsMap[value] || value;
+        },
+        
+        getScopeLabel(value) {
+            return this.scopeLabelsMap[value] || value;
+        },
+        
         goNext() {
             if (!this.isFormValid) {
                 alert('אנא מלא את השדות הנדרשים');
@@ -178,7 +220,7 @@ export default {
 
             this.transitionName = 'slide-left';
             
-            if (this.formLevel < 4) {
+            if (this.formLevel < 5) {
                 this.formLevel++;
             } else {
                 this.submitForm();
@@ -205,7 +247,7 @@ export default {
                     {
                         name: this.projectName,
                         date: this.projectDate,
-                        type: this.projectType, 
+                        type: this.projectType,  // Combined array of format and scope
                         budget: this.projectBudget || 0
                     },
                     {
@@ -310,7 +352,8 @@ export default {
 
 .ProjectNameInput,
 .ProjectDateInput,
-.ProjectTypeInput,
+.ProjectFormatInput,
+.ProjectScopeInput,
 .ProjectBudgetInput,
 .ProjectSummary {
     display: flex;
@@ -341,23 +384,23 @@ input[type=number]:focus {
     box-shadow: 0 0 5px #2977ff;
 }
 
-.checkbox-container {
+.radio-container {
     display: flex;
     flex-direction: column;
     gap: 1vh;
 }
 
-.checkbox-item {
+.radio-item {
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
-.checkbox-item input[type=checkbox] {
+.radio-item input[type=radio] {
     transform: scale(1.2);
 }
 
-.checkbox-item label {
+.radio-item label {
     margin-bottom: 0;
 }
 
@@ -408,6 +451,12 @@ input[type=number]:focus {
 
 .halfWidth {
     width: 48%;
+    height: 6vh;
+    font-size: 1.2em;
+}
+
+.entireWidth {
+    width: 100%;
     height: 6vh;
     font-size: 1.2em;
 }
