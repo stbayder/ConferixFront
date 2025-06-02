@@ -5,7 +5,7 @@
     <router-link :to="{name:'about'}">קצת עלינו</router-link>
     <template v-if="userData">
       <a href="#" @click="LogOut" >התנתק</a>
-      <router-link :to="{name:'create-project'}">צור פרוייקט</router-link>
+      <router-link :to="{name:'create-project'}">צור כנס</router-link>
     </template>
     <template v-else>
       <router-link :to="{name:'sign-up'}">הירשם</router-link>

@@ -5,7 +5,16 @@
             <!-- add loading modal -->
             <div v-if="loading">טוען פרוייקטים..</div>
             <div v-else id="containerOfContainerOfProjects">
-                <div v-if="projectList.length === 0">לא קיימים פרוייקטים</div>
+                <div v-if="projectList.length === 0" class="noProjects">
+                    <p>
+                    לא קיימים פרוייקטים
+                    </p>
+                    <ButtonCompt 
+                        buttonText="צור כנס ראשון!"
+                        :buttonStyle="['signup','big','entireWidth']"
+                        :clickFunc="goToCreateProjectPage"
+                    />
+                </div>
                 <!-- להראות כפתור להפנייה ליצירת פרוייקט -->
 
                 <div v-if="projectList.length > 0 && !projectChosen" class="projectsContainer">
@@ -16,7 +25,7 @@
                     </div>
                 </div>
                 
-                <div v-else id="displayProject"> 
+                <div v-if="projectChosen" id="displayProject"> 
                     <h2>
                         {{ projectChosen.name }}
                     </h2>
@@ -52,6 +61,7 @@
                                     :src="ass.Important ? require('@/assets/icons/starred.png') : require('@/assets/icons/not_starred.png')" 
                                     alt="important star" 
                                     class="star-icon"
+                                    @click="toggleImportance(ass)"
                                 />
                                 <p>{{ getAssignmentStatus(ass.Status) }}</p>
                             </div>
@@ -101,6 +111,7 @@
 <script>
 import axios from 'axios';
 import PopUpModal from '@/components/common/PopUpModal.vue';
+import ButtonCompt from '@/components/common/ButtonCompt.vue';
 import DashboardSidebar from '@/components/Projects/DashboardSidebar.vue';
 import formatDate, { truncateName } from '@/utils/utilFuncs';
 
@@ -185,6 +196,9 @@ export default {
                 this.loading = false;
             }
         },
+        goToCreateProjectPage(){
+            this.$router.push('/projects/create')
+        },
         closeModal(){
             this.modalTitle = null
             this.modalMessage = null
@@ -247,6 +261,43 @@ export default {
                 return "הושלם"
             }
         },
+        async toggleImportance(ass) {
+            try {
+                const response = await axios.patch(
+                    `${process.env.VUE_APP_BACKEND_URL}/api/project-assignments/${ass._id}/importance`,
+                    { Important: !ass.Important }, // toggle the boolean
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${this.token}`
+                        }
+                    }
+                );
+
+                // For Vue 3: Update the assignment in the main project assignments array
+                const assignmentIndex = this.projectChosen.Assignments.findIndex(a => a._id === ass._id);
+                if (assignmentIndex !== -1) {
+                    this.projectChosen.Assignments[assignmentIndex].Important = response.data.Important;
+                }
+                
+                // Also update the filtered assignments if they exist
+                if (this.filteredAssigments) {
+                    const filteredIndex = this.filteredAssigments.findIndex(a => a._id === ass._id);
+                    console.log(filteredIndex)
+                    if (filteredIndex !== -1) {
+                        this.filteredAssigments[filteredIndex].Important = !ass.Important;
+                        console.log(this.filteredAssigments[filteredIndex])
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error toggling importance:', error);
+                // Optionally show an error modal here
+                this.modalType = "error";
+                this.modalTitle = "שגיאה";
+                this.modalMessage = "לא ניתן לעדכן את חשיבות המשימה";
+                this.showModal = true;
+            }
+        },
         formatDate,
         truncateName,
         // handleLogout() {
@@ -272,7 +323,8 @@ export default {
     },
     components:{
         PopUpModal,
-        DashboardSidebar
+        DashboardSidebar,
+        ButtonCompt
     }
 }
 </script>
@@ -293,6 +345,14 @@ h1{
     flex-direction: column;
     justify-content:flex-start;
     align-items: center;
+}
+
+.container > h1 {
+    margin-left: 10vw;
+}
+
+.noProjects{
+    margin-left: 10vw;
 }
 
 .containerOfAll{
@@ -425,6 +485,7 @@ h1{
 .star-icon {
     width: 18px;
     height: 18px;
+    cursor: pointer;
 }
 .pagination-controls {
     margin-top: 1rem;

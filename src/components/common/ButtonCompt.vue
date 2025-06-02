@@ -42,8 +42,6 @@ export default {
         handleClick() {
             if (typeof this.clickFunc === 'function') {
                 this.clickFunc();
-            } else {
-                console.warn('clickFunc is not a function');
             }
         }
     }
