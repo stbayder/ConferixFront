@@ -56,6 +56,11 @@
                                 />
                                 <p>{{ ass.Assignment.Assignment }}</p>
                             </div>
+
+                            <div class="dueDate">
+                                {{ formatDate(ass.DueDate) }}
+                            </div>
+
                             <div class="assignment-right">
                                 <img 
                                     :src="ass.Important ? require('@/assets/icons/starred.png') : require('@/assets/icons/not_starred.png')" 
@@ -469,8 +474,10 @@ h1{
 .Assignment > p{
     margin: 0;
 }
-
-.assignment-left, .assignment-right {
+.assignment-left{
+    width: 10vw;
+}
+.assignment-left, .assignment-right,.dueDate {
     display: flex;
     align-items: center;
     gap: 10px;
