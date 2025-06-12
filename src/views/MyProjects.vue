@@ -42,7 +42,7 @@
                         </div>
                     </div>
                     <!-- Assigments -->
-                    <div v-if="chosenAssigmentCategory" class="assignmentContainer">
+                    <div v-if="chosenAssigmentCategory && !chosenAssignment" class="assignmentContainer">
                         <div 
                             v-for="(ass, index) in paginatedAssignments" 
                             :key="index"
@@ -54,7 +54,13 @@
                                     alt="category icon" 
                                     class="assignment-icon"
                                 />
-                                <p>{{ ass.Assignment.Assignment }}</p>
+
+                                <p 
+                                    class="assName" 
+                                    @click="chooseAssignment(ass)">
+
+                                    {{ ass.Assignment.Assignment }}
+                                </p>
                             </div>
 
                             <div class="dueDate">
@@ -69,6 +75,9 @@
                                     @click="toggleImportance(ass)"
                                 />
                                 <p>{{ getAssignmentStatus(ass.Status) }}</p>
+                                <div 
+                                    :class="['circle', ass.Status == 'Pending' ? 'red' : ass.Status == 'InProgress' ? 'yellow' : 'green']">
+                                </div>
                             </div>
                             
                         </div>
@@ -78,6 +87,13 @@
                             <button @click="currentPage++" :disabled="currentPage === totalPages">הבא</button>
                         </div>
                     
+                    </div>
+                    <div v-if="chosenAssignment">
+                     <ShowAssignment
+                        :Ass="chosenAssignment"
+                        :transStatus="getAssignmentStatus"
+                        @toggleImportance="toggleImportance(chosenAssignment)"
+                    />
                     </div>
                 </div>
             </div>
@@ -118,6 +134,7 @@ import axios from 'axios';
 import PopUpModal from '@/components/common/PopUpModal.vue';
 import ButtonCompt from '@/components/common/ButtonCompt.vue';
 import DashboardSidebar from '@/components/Projects/DashboardSidebar.vue';
+import ShowAssignment from './ShowAssignment.vue';
 import formatDate, { truncateName } from '@/utils/utilFuncs';
 
 export default {
@@ -142,9 +159,11 @@ export default {
                 { label: "עוד לא התחילה", icon: require("@/assets/icons/sleep.png") }
             ],
             chosenAssigmentCategory:null,
+            chosenAssignment:null,
             filteredAssigments:null,
             currentPage: 1,
             itemsPerPage: 5,
+            circleColor:null,
             loading: true,
             modalTitle: null,
             modalMessage:null,
@@ -230,32 +249,27 @@ export default {
             this.currentPage = 1;
             if(cat == "חשוב"){
                 this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Important)
-                console.log(this.filteredAssigments)
                 return
             }
             if(cat == "הושלם"){
                 this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Status == "Done")
-                console.log(this.filteredAssigments)
                 return
             }
             if(cat == "בתהליך"){
                 this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Status == "InProgress")
-                console.log(this.filteredAssigments)
                 return
             }
             if(cat == "עוד לא התחילה"){
                 this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Status == "Pending")
-                console.log(this.filteredAssigments)
                 return
             }
             this.filteredAssigments = this.projectChosen.Assignments.filter(ass => ass.Assignment.Step === cat)
-            console.log(this.filteredAssigments)
         },
         getCategoryIcon(step) {
             const match = this.assgimentCategories.find(cat => cat.label === step);
             return match ? match.icon : null;
         },
-        getAssignmentStatus(assStatus){
+        getAssignmentStatus(assStatus,circle){
             if(assStatus == "Pending"){
                 return "עוד לא התחילה"
             }
@@ -265,6 +279,8 @@ export default {
             if(assStatus == "Done"){
                 return "הושלם"
             }
+
+            return circle
         },
         async toggleImportance(ass) {
             try {
@@ -303,6 +319,9 @@ export default {
                 this.showModal = true;
             }
         },
+        chooseAssignment(ass){
+            this.chosenAssignment = ass;
+        },
         formatDate,
         truncateName,
         // handleLogout() {
@@ -329,7 +348,8 @@ export default {
     components:{
         PopUpModal,
         DashboardSidebar,
-        ButtonCompt
+        ButtonCompt,
+        ShowAssignment
     }
 }
 </script>
@@ -352,10 +372,6 @@ h1{
     align-items: center;
 }
 
-.container > h1 {
-    margin-left: 10vw;
-}
-
 .noProjects{
     margin-left: 10vw;
 }
@@ -365,17 +381,19 @@ h1{
     width: 100%;
 }
 
-.containerOfContainerOfProjects{
+#containerOfContainerOfProjects{
+    display: flex;
+    justify-content: center;
     width: 100%;
 }
 
 .project-item {
-    width: 10vw; /* fixed width */
+    width: 10vw; 
     min-width: 10vw;
     max-width: 10vw;
-    overflow: hidden; /* hide overflow */
-    text-overflow: ellipsis; /* add ellipsis to overflow text */
-    white-space: nowrap; /* prevent wrapping */
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    white-space: nowrap; 
     
     border: 1px solid #2977ff;
     padding: 15px;
@@ -387,13 +405,14 @@ h1{
 }
 
 .projectsContainer{
-    width: 50vw;
     display: flex;
-    justify-content: flex-start;
+    justify-content: flex-start; 
     flex-wrap: wrap;
     gap: 2vw;
+    direction: rtl; 
+    width: fit-content; 
+    max-width: 50vw; 
 }
-
 
 #displayProject{
     display: flex;
@@ -484,9 +503,31 @@ h1{
     max-width: 10vw;
 }
 
+.assName{
+    cursor: pointer;
+}
+
 .assignment-icon {
     width: 20px;
     height: 20px;
+}
+
+.circle {
+  width: 1vw;
+  height: 1vw;
+  border-radius: 50%;
+}
+
+.circle.red{
+    background-color: red;
+}
+
+.circle.green{
+    background-color: green;
+}
+
+.circle.yellow{
+    background-color: yellow;
 }
 
 .star-icon {
