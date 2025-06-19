@@ -65,18 +65,19 @@
 
                             <div class="dueDate">
                                 {{ formatDate(ass.DueDate) }}
-                            </div>
-
-                            <div class="assignment-right">
                                 <img 
                                     :src="ass.Important ? require('@/assets/icons/starred.png') : require('@/assets/icons/not_starred.png')" 
                                     alt="important star" 
                                     class="star-icon"
                                     @click="toggleImportance(ass)"
                                 />
+                            </div>
+
+                            <div class="assignment-right">
+                                
                                 <p>{{ getAssignmentStatus(ass.Status) }}</p>
                                 <div 
-                                    :class="['circle', ass.Status == 'Pending' ? 'red' : ass.Status == 'InProgress' ? 'yellow' : 'green']">
+                                    :class="['circle', ass.Status == 'Pending' ? 'red' : ass.Status == 'In Progress' ? 'yellow' : 'green']">
                                 </div>
                             </div>
                             
@@ -92,7 +93,10 @@
                      <ShowAssignment
                         :Ass="chosenAssignment"
                         :transStatus="getAssignmentStatus"
+                        :stepIconMatch="getCategoryIcon(chosenAssignment.Assignment.Step)"
                         @toggleImportance="toggleImportance(chosenAssignment)"
+                        @updateAssignmentStatus="assignmentStatusUpdate"
+                        @assignmentDeleted="deleteAssignment"
                     />
                     </div>
                 </div>
@@ -113,7 +117,7 @@
     <div v-else>
         <!-- Error state when not authenticated -->
         <PopUpModal 
-            :title="this.modalTitle"
+            :title="modalTitle"
             :message="modalMessage"
             :type="modalType"
             @close="closeModal"
@@ -121,17 +125,25 @@
     </div>
         <!-- general Modal -->
     <PopUpModal 
-        :title="this.modalTitle"
+        :title="modalTitle"
         :message="modalMessage"
         :type="modalType"
         @close="closeModal"
         v-if="showModal && showDashboard"
+    />
+    <PopUpMessage 
+        :title="modalTitle"
+        :message="modalMessage"
+        :type="modalType"
+        @close="closeModal"
+        v-if="DisplayPopUpMessage"
     />
 </template>
 
 <script>
 import axios from 'axios';
 import PopUpModal from '@/components/common/PopUpModal.vue';
+import PopUpMessage from '@/components/common/PopUpMessage.vue';
 import ButtonCompt from '@/components/common/ButtonCompt.vue';
 import DashboardSidebar from '@/components/Projects/DashboardSidebar.vue';
 import ShowAssignment from './ShowAssignment.vue';
@@ -168,7 +180,8 @@ export default {
             modalTitle: null,
             modalMessage:null,
             modalType:null,
-            showModal:null
+            showModal:null,
+            DisplayPopUpMessage:null,
         }
     },
     computed: {
@@ -198,7 +211,7 @@ export default {
                 }
                 
                 const response = await axios.get(
-                    `${process.env.VUE_APP_BACKEND_URL}/api/projects/`, // Fixed typo in "projects"
+                    `${process.env.VUE_APP_BACKEND_URL}/api/projects/`, 
                     {
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -227,6 +240,7 @@ export default {
             this.modalTitle = null
             this.modalMessage = null
             this.modalType = null
+            this.DisplayPopUpMessage = false
             if(!this.userData){
                 this.$router.push('/login')
             }
@@ -245,6 +259,7 @@ export default {
             this.filteredAssigments=null;
         },
         chooseCategory(cat){
+            this.chosenAssignment = null;
             this.chosenAssigmentCategory = cat;
             this.currentPage = 1;
             if(cat == "חשוב"){
@@ -273,7 +288,7 @@ export default {
             if(assStatus == "Pending"){
                 return "עוד לא התחילה"
             }
-            if(assStatus == "InProgress"){
+            if(assStatus == "In Progress"){
                 return "בתהליך"
             }
             if(assStatus == "Done"){
@@ -283,6 +298,7 @@ export default {
             return circle
         },
         async toggleImportance(ass) {
+            console.log(ass)
             try {
                 const response = await axios.patch(
                     `${process.env.VUE_APP_BACKEND_URL}/api/project-assignments/${ass._id}/importance`,
@@ -303,10 +319,8 @@ export default {
                 // Also update the filtered assignments if they exist
                 if (this.filteredAssigments) {
                     const filteredIndex = this.filteredAssigments.findIndex(a => a._id === ass._id);
-                    console.log(filteredIndex)
                     if (filteredIndex !== -1) {
                         this.filteredAssigments[filteredIndex].Important = !ass.Important;
-                        console.log(this.filteredAssigments[filteredIndex])
                     }
                 }
                 
@@ -321,6 +335,32 @@ export default {
         },
         chooseAssignment(ass){
             this.chosenAssignment = ass;
+        },
+        showPopUpMessage(title,message,type){
+            this.modalTitle = title
+            this.modalMessage = message
+            this.modalType = type
+            this.DisplayPopUpMessage = true
+        },
+        assignmentStatusUpdate(ass){
+            console.log(this.chosenAssignment)
+            console.log(ass)
+            this.chosenAssignment = ass
+        },
+        deleteAssignment(deletedAss) {
+            this.chosenAssignment = null;
+
+            // Remove from full project assignments
+            this.projectChosen.Assignments = this.projectChosen.Assignments.filter(
+                ass => ass._id !== deletedAss._id
+            );
+
+            // Also remove from filtered view
+            if (this.filteredAssigments) {
+                this.filteredAssigments = this.filteredAssigments.filter(
+                    ass => ass._id !== deletedAss._id
+                );
+            }
         },
         formatDate,
         truncateName,
@@ -349,7 +389,8 @@ export default {
         PopUpModal,
         DashboardSidebar,
         ButtonCompt,
-        ShowAssignment
+        ShowAssignment,
+        PopUpMessage
     }
 }
 </script>
@@ -358,8 +399,15 @@ export default {
 
 h1{
     font-size: 3em;
-    color: #2977ff;
+    color: #68808A;
+    margin-bottom: 2vh;
+    margin-top: 1vh;
 }
+
+h2{
+margin:0;
+}
+
 .container{
     font-family: "Noto Sans Hebrew";
     direction: rtl;
@@ -395,12 +443,12 @@ h1{
     text-overflow: ellipsis; 
     white-space: nowrap; 
     
-    border: 1px solid #2977ff;
+    border: 1px solid #68808A;
     padding: 15px;
     margin-bottom: 10px;
     border-radius: 4px;
     background-color: #F2F0EF;
-    color: #2977ff;
+    color: #68808A;
     cursor: pointer;
 }
 
@@ -432,7 +480,7 @@ h1{
   position: relative;
   width: 60px;
   height: 60px;
-  background-color: #2977ff;
+  background-color: #68808A;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -485,7 +533,7 @@ h1{
     display: flex;
     justify-content: space-between;
 
-    background-color: #2977ff;
+    background-color: #68808A;
     color: #F2F0EF;
     border-radius: 20px;
 }
@@ -493,15 +541,14 @@ h1{
 .Assignment > p{
     margin: 0;
 }
-.assignment-left{
-    width: 10vw;
-}
+
 .assignment-left, .assignment-right,.dueDate {
     display: flex;
     align-items: center;
     gap: 10px;
     max-width: 10vw;
 }
+
 
 .assName{
     cursor: pointer;
@@ -544,7 +591,7 @@ h1{
 }
 
 .pagination-controls button {
-    background-color: #2977ff;
+    background-color: #68808A;
     color: #fff;
     border: none;
     padding: 5px 10px;

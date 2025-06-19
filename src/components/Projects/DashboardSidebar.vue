@@ -87,7 +87,7 @@ export default {
 
 nav {
   width: 20vw;
-  background-color: #2977ff;
+  background-color: #68808A;
   display: flex;
   flex-direction: column;
   align-items: center;

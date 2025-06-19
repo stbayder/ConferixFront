@@ -5,7 +5,7 @@ import SignUpPage from "../views/SignUpPage.vue"
 import LoginView from "../views/LoginView.vue";
 import CreateProjectForm from "@/views/CreateProjectForm.vue";
 import MyProjects from "@/views/MyProjects.vue";
-
+import ForumComp from "@/views/ForumComp.vue"
 
 const routes = [
   {
@@ -37,6 +37,11 @@ const routes = [
     path: "/projects/dashboard",
     name: "projects-dashboard",
     component: MyProjects,
+  },
+  {
+    path: "/projects/forum",
+    name: "forum",
+    component: ForumComp,
   }
 ];
 

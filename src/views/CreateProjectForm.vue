@@ -371,7 +371,7 @@ input[type=date],
 input[type=number] {
     width: 100%;
     height: 6vh;
-    border: 1px solid #2977ff;
+    border: 1px solid #68808A;
     text-indent: 10px;
     font-size: 1em;
     margin-bottom: 2vh;
@@ -381,7 +381,7 @@ input[type=text]:focus,
 input[type=date]:focus,
 input[type=number]:focus {
     outline: none;
-    box-shadow: 0 0 5px #2977ff;
+    box-shadow: 0 0 5px #B2C9CA;
 }
 
 .radio-container {
@@ -445,8 +445,8 @@ input[type=number]:focus {
 
 .secondary {
     background-color: #F2F0EF;
-    color: #2977ff;
-    border: 1px solid #2977ff;
+    color: #68808A;
+    border: 1px solid #68808A;
 }
 
 .halfWidth {
@@ -460,4 +460,9 @@ input[type=number]:focus {
     height: 6vh;
     font-size: 1.2em;
 }
+
+input[type="radio"] {
+  accent-color: #68808A; /* Replace with any color you want */
+}
+
 </style>

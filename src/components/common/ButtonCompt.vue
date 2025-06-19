@@ -93,17 +93,18 @@ button {
 }
 
 .signup {
-    background-color: #2977ff;
+    background-color:#68808A ;
+     color:  #F2F0EF;
 }
 
 .secondary {
     background-color: #F2F0EF;
-    color: #2977ff;
-    border: 1px solid #2977ff;
+    color: #68808A;
+    border: 1px solid #B2C9CA;
 }
 
 .default {
-    color: #2977ff;
-    background-color: #F2F0EF;
+    color: #F2F0EF;
+    background-color:  #68808A;
 }
 </style>

@@ -17,7 +17,7 @@
 
             <ButtonCompt 
                 buttonText="התחבר!" 
-                :buttonStyle="['medium','default']" 
+                :buttonStyle="['medium','secondary']" 
                 @click.prevent="submitForm"
                 :disabled="isLoading"
             />
@@ -208,7 +208,7 @@ export default{
     width: 30%;
     height: 100%;
     font-family: "Varela Round", sans-serif;
-    background-color: #2977ff;
+    background-color: #68808A;
     color: #F2F0EF;
     padding: 20px 0;
     box-sizing: border-box;

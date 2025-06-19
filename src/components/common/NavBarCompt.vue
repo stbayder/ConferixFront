@@ -3,13 +3,15 @@
     <img src="../../assets/images/logo.png" alt="">
     <router-link :to="{name:'home'}">בית</router-link> 
     <router-link :to="{name:'about'}">קצת עלינו</router-link>
-    <template v-if="userData">
-      <a href="#" @click="LogOut" >התנתק</a>
-      <router-link :to="{name:'create-project'}">צור כנס</router-link>
-    </template>
-    <template v-else>
+    <template v-if="!userData">
       <router-link :to="{name:'sign-up'}">הירשם</router-link>
       <router-link :to="{name:'login'}">התחבר</router-link>
+    </template>
+    <template v-else>
+      <router-link :to="{name:'create-project'}">צור כנס</router-link>
+      <router-link :to="{name:'projects-dashboard'}">הכנסים שלי</router-link>
+      <router-link :to="{name:'forum'}"> מאגר טיפים</router-link>
+      <a href="#" @click="LogOut" >התנתק</a>
     </template>
   </div>
 </template>
