@@ -139,7 +139,7 @@
 </template>
 
 <script>
-import AssignmentComment from "@/components/Projects/AssignmentComment.vue";
+import AssignmentComment from "@/components/Projects/ProjectAssignmentItem.vue";
 import CommentViewModal from "@/components/Projects/CommentViewModal.vue";
 import CommentEditModal from "@/components/Projects/CommentEditModal.vue";
 import ConfirmationModal from "@/components/common/ConfirmationModal.vue";

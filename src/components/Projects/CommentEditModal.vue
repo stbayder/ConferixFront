@@ -37,7 +37,7 @@
 
 <script>
 import formatDate from "../../utils/utilFuncs";
-
+import getUsernameFromEmail from "@/utils/utilFuncs"
 export default {
   props: {
     comment: Object
@@ -53,14 +53,12 @@ export default {
     this.editedContent = this.comment.Content;
   },
   methods: {
+    getUsernameFromEmail,
     closeModal() {
       this.$emit('close');
     },
     detectScreen() {
       this.isMobile = window.innerWidth < 768; 
-    },
-    getUsernameFromEmail(email) {
-      return email.split("@")[0];
     },
     formatDate,
     saveChanges() {

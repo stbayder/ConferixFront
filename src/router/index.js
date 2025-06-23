@@ -6,6 +6,7 @@ import LoginView from "../views/LoginView.vue";
 import CreateProjectForm from "@/views/CreateProjectForm.vue";
 import MyProjects from "@/views/MyProjects.vue";
 import ForumComp from "@/views/ForumComp.vue"
+import AssigmentComments from "@/views/AssignmentComments.vue"
 
 const routes = [
   {
@@ -42,7 +43,13 @@ const routes = [
     path: "/projects/forum",
     name: "forum",
     component: ForumComp,
-  }
+  },
+  {
+  path: '/projects/forum/assigment/:id',
+  name: 'AssigmentComments',
+  component: AssigmentComments // or wherever your component is
+}
+
 ];
 
 const router = createRouter({

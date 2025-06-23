@@ -24,17 +24,16 @@
           />
         </div>
 
-        <!-- Category Filter -->
+        <!-- Step Filter -->
         <div class="filter-group">
-          <label for="category">קטגוריה:</label>
-          <select id="category" v-model="filters.category" @change="filterAssignments">
-            <option value="">כל הקטגוריות</option>
-            <option v-for="type in availableTypes" :key="type" :value="type">
-              {{ type }}
+          <label for="step">שלב:</label>
+          <select id="step" v-model="filters.step" @change="filterAssignments">
+            <option value="">כל השלבים</option>
+            <option v-for="step in availableSteps" :key="step" :value="step">
+              {{ step }}
             </option>
           </select>
         </div>
-
 
         <!-- Comments Filter -->
         <div class="filter-group">
@@ -103,7 +102,7 @@
 
             <div class="comments-info">
               <span class="comments-count">
-                💬 {{ assignment.commentCount || 0 }} תגובות
+                💬 {{ assignment.commentCount || 0 }} <span @click="goToComments(assignment)" class="commments-link">תגובות</span> 
               </span>
             </div>
           </div>
@@ -114,28 +113,28 @@
     <!-- Pagination -->
     <div v-if="totalPages > 1" class="pagination">
       <button 
-        @click="currentPage--" 
-        :disabled="currentPage === 1"
-        class="page-btn"
-      >
-        הקודם
-      </button>
-      
-      <span class="page-info">
-        עמוד {{ currentPage }} מתוך {{ totalPages }}
-      </span>
-      
-      <button 
         @click="currentPage++" 
         :disabled="currentPage === totalPages"
         class="page-btn"
       >
         הבא
       </button>
+      
+      <span class="page-info">
+        עמוד {{ currentPage }} מתוך {{ totalPages }}
+      </span>
+      
+      
+      <button 
+        @click="currentPage--" 
+        :disabled="currentPage === 1"
+        class="page-btn"
+      >
+        הקודם
+      </button>
     </div>
   </div>
 </template>
-
 <script>
 import axios from 'axios';
 import PopUpModal from '@/components/common/PopUpModal.vue';
@@ -156,7 +155,7 @@ export default {
       // Assignments data
       assignments: [],
       filteredAssignments: [],
-      availableTypes: [],
+      availableSteps: [],
       loading: false,
       error: null,
       currentPage: 1,
@@ -164,7 +163,7 @@ export default {
       pageSize: 20,
       filters: {
         search: '',
-        category: '',
+        step: '',
         status: '',
         comments: ''
       },
@@ -173,7 +172,6 @@ export default {
   },
   async mounted() {
     let isTokenValid = await verifyToken();
-    console.log(isTokenValid);
     if (!this.User || !isTokenValid.valid) {
       this.modalMessage = "נא להתחבר כדי לצפות בתוכן זה";
       this.modalTitle = "שגיאה";
@@ -181,11 +179,10 @@ export default {
     } else {
       // Only fetch assignments if user is authenticated
       await this.fetchAssignments();
-      this.extractAvailableTypes();
+      this.extractAvailableSteps();
     }
   },
   methods: {
-    // Original methods from your component
     closeSignOut() {
       this.showSignOutModal = false;
       localStorage.removeItem("userData");
@@ -247,20 +244,20 @@ export default {
       }, 500);
     },
 
-    extractAvailableTypes() {
-      const types = new Set();
+    extractAvailableSteps() {
+      const steps = new Set();
       this.assignments.forEach(assignment => {
-        if (assignment.Type && Array.isArray(assignment.Type)) {
-          assignment.Type.forEach(type => types.add(type));
+        if (assignment.Step) {
+          steps.add(assignment.Step);
         }
       });
-      this.availableTypes = Array.from(types).sort();
+      this.availableSteps = Array.from(steps).sort();
     },
 
     clearFilters() {
       this.filters = {
         search: '',
-        category: '',
+        step: '',
         status: '',
         comments: ''
       };
@@ -275,6 +272,9 @@ export default {
         'completed': 'הושלם'
       };
       return statusMap[status] || status || 'ממתין';
+    },
+    goToComments(ass){
+      this.$router.push({ name: 'AssigmentComments', params: { id: ass._id } });
     }
   },
   watch: {
@@ -295,13 +295,19 @@ export default {
   padding: 20px;
   direction: rtl;
   text-align: right;
+  display: flex;
+  flex-direction: column;
 }
 
 .header {
   margin-bottom: 30px;
+  align-self: center;
+  display: flex;
+  flex-direction: column;
 }
 
 .header h1 {
+  align-self: center;
   color: #333;
   margin-bottom: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -350,7 +356,8 @@ export default {
   background: #6c757d;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 18px;
+  font-size: 14px;
   border-radius: 4px;
   cursor: pointer;
   height: fit-content;
@@ -502,6 +509,13 @@ export default {
 .comments-count {
   font-size: 14px;
   color: #666;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.comments-count:hover .commments-link{
+  border-bottom: 1px solid #666;
+  transform: 1s all;
 }
 
 .pagination {

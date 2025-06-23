@@ -34,3 +34,7 @@ export async function verifyToken() {
     return { valid: false };
   }
 }
+
+export function getUsernameFromEmail(email) {
+  return email.split("@")[0];
+}

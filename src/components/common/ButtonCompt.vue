@@ -58,6 +58,7 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+    transition: all 0.5s;
 }
 
 .big {
@@ -70,6 +71,12 @@ button {
     width: 8vw;
     height: 6vh;
     font-size: 1.7em;
+}
+
+.small{
+    width:6vw ;
+    height: 4vh;
+    font-size: 1.5;
 }
 
 .entireWidth {
@@ -106,5 +113,9 @@ button {
 .default {
     color: #F2F0EF;
     background-color:  #68808A;
+}
+
+.animate:hover{
+    transform: scale(1.1);
 }
 </style>
