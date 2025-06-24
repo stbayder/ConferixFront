@@ -45,10 +45,10 @@ const routes = [
     component: ForumComp,
   },
   {
-  path: '/projects/forum/assigment/:id',
-  name: 'AssigmentComments',
-  component: AssigmentComments // or wherever your component is
-}
+    path: '/projects/forum/assigment/:id',
+    name: 'AssigmentComments',
+    component: AssigmentComments // or wherever your component is
+  }
 
 ];
 

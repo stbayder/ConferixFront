@@ -41,21 +41,22 @@
         alt="important star"
         class="icon"
         id="star-icon"
-        @click="toggleImportance(ass)"
+        @click="toggleImportance(Ass)"
       />
     </div>
 
     <div class="info">
-      <h2 class="title">
+      <h2 class="title" @click="goToSpecificTip(Ass)">
         <img :src="stepIconMatch" alt="icon" class="stepIcon" />
-        {{ Ass.Assignment.Assignment }}
+        <span>{{ Ass.Assignment.Assignment }}</span>
+        <span class="tooltip">צפה בטיפים למשימה הזו </span>
       </h2>
       <div class="date">
         <img :src="require('@/assets/icons/icons8-date-100.png')" alt="Date" class="icon" />
         <p>
           {{ formatDate(Ass.Assignment.ReccomendedStartDate) }} 
         </p>
-        <span class="tooltip">תאריך סיום מיועד</span>
+        <span class="tooltip">תאריך התחלה רצוי</span>
       </div>
     </div>
     
@@ -442,6 +443,9 @@ export default {
     closeDeleteAssignmentModal(){
       this.showDeleteAssignmentModal = false;
     },
+    goToSpecificTip(ass){
+      this.$router.push({ name: 'AssigmentComments', params: { id:ass.Assignment._id } })
+    },
     formatDate,
     truncateName,
   },
@@ -483,6 +487,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 1vw;
+  position: relative;
+  cursor: pointer;
 }
 
 #Assignee {
@@ -651,5 +657,18 @@ export default {
 .date:hover .tooltip {
   visibility: visible;
   opacity: 1;
+}
+.date > .tooltip{
+  bottom: -20px;
+}
+.title:hover > .tooltip{
+  visibility: visible;
+  opacity: 1;
+}
+
+.title > .tooltip{
+  bottom: -20px;
+  font-size: 0.7em;
+  right:5vw;
 }
 </style>

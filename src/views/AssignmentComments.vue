@@ -524,26 +524,6 @@ export default {
       }
     },
 
-
-    // updateCommentInState(updatedComment) {
-    //   // Find and update comment in main comments array
-    //   const commentIndex = this.comments.findIndex(c => c._id === updatedComment._id)
-    //   if (commentIndex !== -1) {
-    //     this.comments[commentIndex] = { ...this.comments[commentIndex], ...updatedComment }
-    //     return
-    //   }
-
-    //   // Find and update in replies
-    //   for (const comment of this.comments) {
-    //     if (comment.replies) {
-    //       const replyIndex = comment.replies.findIndex(r => r._id === updatedComment._id)
-    //       if (replyIndex !== -1) {
-    //         comment.replies[replyIndex] = { ...comment.replies[replyIndex], ...updatedComment }
-    //         return
-    //       }
-    //     }
-    //   }
-    // },
     updateCommentInState(updatedComment) {
       // Update the comment in topLevelComments array
       const commentIndex = this.topLevelComments.findIndex(c => c._id === updatedComment._id);

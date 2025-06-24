@@ -1,8 +1,21 @@
 <template>
   <div class="home">
     <div class="header">
-      <h1 class="title">ברוכים הבאים ל Conferix</h1>
-      <ButtonCompt buttonText="הירשם" :buttonStyle="['big','signup']" :clickFunc="signUpFunc"/>
+      <template v-if="!currentUser">
+        <h1 class="title" >ברוכים הבאים ל Conferix</h1>
+        <ButtonCompt buttonText="הירשם" :buttonStyle="['big','signup']" :clickFunc="signUpFunc" />
+      </template>
+      
+      <template v-else>
+        <h1 class="title" >
+          <span>Conferix</span>
+          <br>
+          <span>כי כנס טוב מתחיל בניהול חכם </span>
+        </h1>
+
+        <ButtonCompt buttonText="! החל לנהל" :buttonStyle="['big','signup']" :clickFunc="goToMyProjects" />
+      </template>
+
     </div>
   </div>
 </template>
@@ -11,13 +24,24 @@
 import ButtonCompt from '@/components/common/ButtonCompt.vue';
 export default {
   name: "HomeView",
+  data(){
+    return{
+      currentUser:JSON.parse(localStorage.getItem('userData')) || null,
+    }
+  },
   components:{
     ButtonCompt,
   },
   methods:{
     signUpFunc(){
       this.$router.push({ name: 'sign-up'})
+    },
+    goToMyProjects(){
+      this.$router.push({name:"projects-dashboard"})
     }
+  },
+  mounted(){
+    console.log(this.currentUser)
   }
 };
 </script>
@@ -45,5 +69,8 @@ h1.title{
   font-family: "Varela Round", sans-serif;
   color: #F2F0EF;
   margin-bottom: 20vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
